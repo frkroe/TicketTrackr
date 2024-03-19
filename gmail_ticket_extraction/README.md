@@ -15,7 +15,7 @@ SENDER_EMAIL= # Email address of the sender
         - Credentials type: OAuth client ID
         - Application type: Desktop app 
         - Name: anything you want
-    - Download the credentials file and save it as `gmail_client_secret.json` in the [secrets directory](secrets/).
+    - Download the credentials file and save it as `gmail_client_secret.json` in the [secrets directory](../secrets/).
     - Open the [OAuth consent screen tab](https://console.cloud.google.com/apis/credentials/consent) and add your personal email address to the test users.
 
 
