@@ -1,5 +1,6 @@
 import os
 import base64
+import json
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -10,12 +11,18 @@ from googleapiclient.errors import HttpError
 dotenv_path = "../secrets/.env"
 load_dotenv(dotenv_path)
 
-CLIENT_ID = os.getenv('CLIENT_ID')
-CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
+SENDER_EMAIL = os.getenv('SENDER_EMAIL')
+
+# Load client secrets values
+client_secret_path = "../secrets/gmail_client_secret.json"
+with open(client_secret_path) as f:
+    data = json.load(f)
+
+CLIENT_ID = data['client_id']
+CLIENT_SECRET = data['client_secret']
 
 SAVE_DIR = './emails'
-SENDER_EMAIL = os.getenv('SENDER_EMAIL')
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
 
 def gmail_authenticate():
@@ -36,10 +43,15 @@ def download_attachments(service):
             return
         print(f"Found {len(messages)} messages. Checking for PDF attachments...")
 
+        # Create a directory to save the attachments (if it doesn't exist)
+        if not os.path.exists(SAVE_DIR):
+            os.makedirs(SAVE_DIR)
+        
         for message in messages:
             msg = service.users().messages().get(userId='me', id=message['id'], format='full').execute()
             parts = [part for part in msg['payload'].get('parts', []) if part['mimeType'] == 'application/pdf']
             
+            # Download PDF attachments
             for part in parts:
                 if 'filename' in part and part['filename'].lower().endswith('.pdf'):
                     att_id = part['body']['attachmentId']
