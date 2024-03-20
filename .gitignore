@@ -1,3 +1,5 @@
 secrets/*
 */emails/*
 */venv/*
+*/csvs/*
+*/avros/*
