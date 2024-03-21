@@ -19,8 +19,8 @@ client_secret_path = "../secrets/gmail_client_secret.json"
 with open(client_secret_path) as f:
     data = json.load(f)
 
-CLIENT_ID = data['client_id']
-CLIENT_SECRET = data['client_secret']
+CLIENT_ID = data['installed']['client_id']
+CLIENT_SECRET = data['installed']['client_secret']
 
 SAVE_DIR = './emails'
 SCOPES = ['https://www.googleapis.com/auth/gmail.modify']

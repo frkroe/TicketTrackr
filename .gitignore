@@ -3,3 +3,4 @@ secrets/*
 */venv/*
 */csvs/*
 */avros/*
+.DS_Store
