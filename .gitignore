@@ -4,3 +4,5 @@ secrets/*
 */csvs/*
 */avros/*
 .DS_Store
+venv
+pyvenv.cfg

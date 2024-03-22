@@ -9,6 +9,7 @@ pdf_dir = '../gmail_ticket_extraction/emails'
 csv_dir = './csvs'
 avro_dir = './avros'
 
+
 def convert_pdf_to_text(filename):    
     # Open the PDF file in read binary mode.
     pdf_file = open(os.path.join(pdf_dir, filename), 'rb')
@@ -69,13 +70,8 @@ def get_timestamp(text):
     return timestamp_match.group(0) if timestamp_match else None
 
 def get_product_lines(text):
-    extracted_data = []
-    extracted_data = []
-    start_extraction = False
-    just_encountered = False
     lines = [[line] for line in text.splitlines()]
 
-    print(lines)
     for number, line in enumerate(lines):
         line_text = line[0] 
         if 'Descripción P. Unit Importe' in line_text:
@@ -84,9 +80,38 @@ def get_product_lines(text):
             final_product_line = number
             break
 
-    product_lines = lines[initial_product_line:final_product_line]
+    # Replacing , by . in all floats in the list and getting only those lines that correspond to products
+    product_lines = list(map(lambda sublist: 
+                            [item.replace(',', '.') 
+                            for item in sublist], 
+                            lines[initial_product_line:final_product_line]))
+
     
     return product_lines
+
+def parser_product_lines(list_products: list)->list:
+    default_keys = {
+        'cantidad': None,
+        'descripcion': None,
+        'peso_volumen': None,
+        'unidades': None,
+        'precio_unidad': None,
+        'unidades_p_unidad': None,
+        'importe': None
+    }
+    parsed_lines = []
+
+    pattern_cantidad = r'^(\d+)(?!\.\d+)(?=[A-Za-z+*])'
+
+    for line in list_products:
+        content = line[0]
+        if re.search(pattern_cantidad, content):
+           default_keys['cantidad'] = re.search(pattern_cantidad, content).group(1)
+        
+        parsed_lines.append(default_keys)
+    
+    return parsed_lines
+
 
 # def extract_product_info_from_text(text):
 #     extracted_data = []
@@ -202,8 +227,10 @@ def get_product_lines(text):
 
 
 if __name__ == "__main__":
-    filename = '20240305 Mercadona 4,97 €.pdf'
+    filename = '20240109 Mercadona 6,30 €.pdf'
     text = convert_pdf_to_text(filename)
     time_stamp = get_timestamp(text)
     product_lines = get_product_lines(text)
     print(product_lines)
+    parsed_lines = parser_product_lines(product_lines)
+    print(parsed_lines)
