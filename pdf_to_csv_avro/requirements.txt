@@ -1,2 +1,6 @@
 PyPDF2
 fastavro
+pdfminer.six
+pytesseract
+Pillow
+pdf2image

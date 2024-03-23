@@ -1,29 +1,40 @@
-import PyPDF2
+from pdf2image import convert_from_path
+from PIL import Image, ImageFilter, ImageEnhance
+import pytesseract
 import os
+import re
 
-# Get the directory path where the PDF files are stored.
+# Specify the directory where your PDFs are stored
 pdf_dir = '../gmail_ticket_extraction/emails'
-csv_dir = './csvs'
-avro_dir = './avros'
 
-def convert_pdf_to_text(filename):    
-    # Open the PDF file in read binary mode.
-    pdf_file = open(os.path.join(pdf_dir, filename), 'rb')
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
+def convert_pdf_to_text_with_ocr(filename):
+    pdf_file_path = os.path.join(pdf_dir, filename)
+    
+    images = convert_from_path(pdf_file_path)
+    
     text = ''
-
-    # Loop over each page in the PDF file and extract the text
-    for page_num in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[page_num]
-        text += page.extract_text()
-
-        # Write to CSV
-    with open("Output.txt", "w") as text_file:
-        text_file.write(text)
-
-    pdf_file.close()
+    for image in images:
+        # # Convert image to grayscale first
+        # image = image.convert('L')
+        
+        # # Enhance the contrast on the grayscale image
+        # image = ImageEnhance.Contrast(image).enhance(2)
+        
+        # # Then, if needed, binarize the image
+        # image = image.point(lambda x: 0 if x<128 else 255, '1')
+        
+        # # Apply noise reduction
+        # image = image.filter(ImageFilter.MedianFilter())
+        
+        # # Resize the image using Image.Resampling.LANCZOS for high-quality resampling
+        # image = image.resize([2 * _ for _ in image.size], Image.LANCZOS)
+        
+        # Extract text using Tesseract OCR with custom configurations
+        custom_config = r'--oem 3 --psm 6'
+        text += pytesseract.image_to_string(image)
+    
     return text
-
 if __name__ == "__main__":
-    filename = '20240219 Mercadona 24,08 €.pdf'
-    convert_pdf_to_text(filename)
+    filename = '20240316 Mercadona 103,45 €.pdf'
+    extracted_text = convert_pdf_to_text_with_ocr(filename)
+    print(extracted_text)

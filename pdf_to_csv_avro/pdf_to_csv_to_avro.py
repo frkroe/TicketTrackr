@@ -1,4 +1,5 @@
-import PyPDF2
+from pdf2image import convert_from_path
+import pytesseract
 import os
 import re
 import csv
@@ -11,17 +12,16 @@ avro_dir = './avros'
 
 
 def convert_pdf_to_text(filename):    
-    # Open the PDF file in read binary mode.
-    pdf_file = open(os.path.join(pdf_dir, filename), 'rb')
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
-    text = ''
-
-    # Loop over each page in the PDF file and extract the text
-    for page_num in range(len(pdf_reader.pages)):
-        page = pdf_reader.pages[page_num]
-        text += page.extract_text()
+    pdf_file_path = os.path.join(pdf_dir, filename)
     
-    pdf_file.close()
+    # Convert PDF to a list of image objects
+    images = convert_from_path(pdf_file_path)
+
+    text = ''
+    # Iterate through each image and extract text using Tesseract OCR
+    for image in images:
+        text += pytesseract.image_to_string(image)
+
     return text
 
 def save_to_csv(filename, extracted_data):
@@ -74,9 +74,9 @@ def get_product_lines(text):
 
     for number, line in enumerate(lines):
         line_text = line[0] 
-        if 'Descripción P. Unit Importe' in line_text:
+        if 'Descripcion P. Unit Importe' in line_text:
             initial_product_line = number + 1
-        if 'TOTAL (€)' in line_text:
+        if 'TOTAL (' in line_text:
             final_product_line = number
             break
 
@@ -90,26 +90,36 @@ def get_product_lines(text):
     return product_lines
 
 def parser_product_lines(list_products: list)->list:
-    default_keys = {
-        'cantidad': None,
-        'descripcion': None,
-        'peso_volumen': None,
-        'unidades': None,
-        'precio_unidad': None,
-        'unidades_p_unidad': None,
-        'importe': None
-    }
     parsed_lines = []
 
-    pattern_cantidad = r'^(\d+)(?!\.\d+)(?=[A-Za-z+*])'
+    # pattern_cantidad = r'^(\d+)(?!\.\d+)(?=[A-Za-z+*])'
+    pattern_cantidad = r'^(\d+)\s'
+    pattern_descripcion = r'^\d*([+\-%A-Za-z0-9 /%º.,-ñáéíóúÁÉÍÓÚüÜ]+?)(?=\s\d+\.\d{2})'
+
 
     for line in list_products:
+        default_keys = {
+            'cantidad': None,
+            'descripcion': None,
+            'peso_volumen': None,
+            'unidades': None,
+            'precio_unidad': None,
+            'unidades_p_unidad': None,
+            'importe': None
+        }
+
         content = line[0]
+        # Skip specific cases
+        if content == 'PESCADO' or re.match(r'^\d+\.\d+\s*(kg|l)', content):
+            continue
         if re.search(pattern_cantidad, content):
-           default_keys['cantidad'] = re.search(pattern_cantidad, content).group(1)
+            default_keys['cantidad'] = re.search(pattern_cantidad, content).group(1)
+
+        if re.search(pattern_descripcion, content):
+            default_keys['descripcion'] = re.search(pattern_descripcion, content).group(1)
         
         parsed_lines.append(default_keys)
-    
+
     return parsed_lines
 
 
@@ -227,10 +237,16 @@ def parser_product_lines(list_products: list)->list:
 
 
 if __name__ == "__main__":
-    filename = '20240109 Mercadona 6,30 €.pdf'
+    filename = '20240316 Mercadona 103,45 €.pdf'
+    # filename = '20240320 Mercadona 11,02 €.pdf'
     text = convert_pdf_to_text(filename)
+    print(text)
     time_stamp = get_timestamp(text)
     product_lines = get_product_lines(text)
     print(product_lines)
     parsed_lines = parser_product_lines(product_lines)
-    print(parsed_lines)
+    # print(parsed_lines)
+    for item in parsed_lines:
+        print(f"Cantidad: {item['cantidad']}, Descripcion: {item['descripcion']}")
+    dict_count = len([item for item in parsed_lines if isinstance(item, dict)])
+    print(dict_count)
