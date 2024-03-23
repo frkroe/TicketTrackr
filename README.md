@@ -1,5 +1,4 @@
 # Ticket Trackr
-g
 
 
 ## :thinking: What
