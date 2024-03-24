@@ -74,20 +74,63 @@ def get_product_lines(text):
 
     for number, line in enumerate(lines):
         line_text = line[0] 
-        if 'Descripcion P. Unit Importe' in line_text:
+        if 'Descripcion P. Unit' in line_text:
             initial_product_line = number + 1
         if 'TOTAL (' in line_text:
             final_product_line = number
             break
 
-    # Replacing , by . in all floats in the list and getting only those lines that correspond to products
     product_lines = list(map(lambda sublist: 
-                            [item.replace(',', '.') 
+                            [item.replace(',', '') 
                             for item in sublist], 
                             lines[initial_product_line:final_product_line]))
 
-    
     return product_lines
+
+def get_and_convert_price(text: list)->list:
+    # Regex pattern for price
+    price_pattern = r"\s(\S+\d{2})$" 
+
+    for line in text:
+        match = re.search(price_pattern, line[0])
+        if match and '.' not in match.group(1):
+            result = str(format(float(match.group(1))/100, '.2f'))
+            line[0] = re.sub(price_pattern, f" {result}", line[0])
+    return text    
+
+def get_and_convert_price_per_unit(text: list)->list:
+    # Regex pattern for quantity and price per unit
+    quantity_pattern = r'^(\d+)\s'
+    price_per_unit_pattern = r"\s([\d.]+)\s\d+\.\d+$"
+
+    for line in text:
+        match = re.search(quantity_pattern, line[0])
+        if match and int(match.group(1)) > 1 and re.search(price_per_unit_pattern, line[0]):
+            match_price_per_unit = re.search(price_per_unit_pattern, line[0])
+            if match_price_per_unit and '.' not in match_price_per_unit.group(1):
+                result = str(format(float(match_price_per_unit.group(1))/100, '.2f'))
+                line[0] = re.sub(price_per_unit_pattern, f" {result}", line[0])
+    return text
+
+def get_and_convert_weight_and_variable_price(text: list)->list:
+    # Regex pattern for variable price (e.g. 1,50€/kg)
+    variable_price_pattern = r"^\d+\s+[a-zA-Z]+\s+(\d+)"
+    weight_pattern = r'^(\d+)\s'
+
+    for line in text:
+        match_weight = re.search(weight_pattern, line[0])
+        if match_weight and len(match_weight.group(1)) > 3:
+            # Convert weight to float
+            result_weight = str(format(float(match_weight.group(1))/1000, '.3f'))
+            # Convert variable price to float
+            match_variable_price = re.search(variable_price_pattern, line[0])
+            result_variable_price = str(format(float(match_variable_price.group(1))/100, '.2f'))
+            
+            line[0] = re.sub(variable_price_pattern, f"{result_variable_price}", line[0])
+            line[0] = re.sub(weight_pattern, f"{result_weight} ", line[0])
+
+    return text
+  
 
 def parser_product_lines(list_products: list)->list:
     parsed_lines = []
@@ -95,7 +138,6 @@ def parser_product_lines(list_products: list)->list:
     # pattern_cantidad = r'^(\d+)(?!\.\d+)(?=[A-Za-z+*])'
     pattern_cantidad = r'^(\d+)\s'
     pattern_descripcion = r'^\d*([+\-%A-Za-z0-9 /%º.,-ñáéíóúÁÉÍÓÚüÜ]+?)(?=\s\d+\.\d{2})'
-
 
     for line in list_products:
         default_keys = {
@@ -123,7 +165,28 @@ def parser_product_lines(list_products: list)->list:
     return parsed_lines
 
 
-# def extract_product_info_from_text(text):
+if __name__ == "__main__":
+    filename = '20240316 Mercadona 103,45 €.pdf'
+    # filename = '20240320 Mercadona 11,02 €.pdf'
+    text = convert_pdf_to_text(filename)
+    # print(text)
+    time_stamp = get_timestamp(text)
+    product_lines = get_product_lines(text)
+    product_lines = get_and_convert_price(product_lines)
+    product_lines = get_and_convert_price_per_unit(product_lines)
+    product_lines = get_and_convert_weight_and_variable_price(product_lines)
+    print(product_lines)
+
+
+    # parsed_lines = parser_product_lines(product_lines)
+    # # print(parsed_lines)
+    # for item in parsed_lines:
+    #     print(f"Cantidad: {item['cantidad']}, Descripcion: {item['descripcion']}")
+    # dict_count = len([item for item in parsed_lines if isinstance(item, dict)])
+    # print(dict_count)
+
+
+    # def extract_product_info_from_text(text):
 #     extracted_data = []
 #     start_extraction = False
 #     just_encountered = False
@@ -235,18 +298,3 @@ def parser_product_lines(list_products: list)->list:
 #             avro_filename = os.path.splitext(os.path.join(avro_dir, filename))[0] + '.avro'
 #             save_to_avro(avro_filename, extracted_data)
 
-
-if __name__ == "__main__":
-    filename = '20240316 Mercadona 103,45 €.pdf'
-    # filename = '20240320 Mercadona 11,02 €.pdf'
-    text = convert_pdf_to_text(filename)
-    print(text)
-    time_stamp = get_timestamp(text)
-    product_lines = get_product_lines(text)
-    print(product_lines)
-    parsed_lines = parser_product_lines(product_lines)
-    # print(parsed_lines)
-    for item in parsed_lines:
-        print(f"Cantidad: {item['cantidad']}, Descripcion: {item['descripcion']}")
-    dict_count = len([item for item in parsed_lines if isinstance(item, dict)])
-    print(dict_count)

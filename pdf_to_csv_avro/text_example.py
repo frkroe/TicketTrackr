@@ -14,6 +14,10 @@ def convert_pdf_to_text_with_ocr(filename):
     
     text = ''
     for image in images:
+
+        #save image as png
+        image.save(f'{filename}.png', 'PNG')
+
         # # Convert image to grayscale first
         # image = image.convert('L')
         
@@ -36,5 +40,6 @@ def convert_pdf_to_text_with_ocr(filename):
     return text
 if __name__ == "__main__":
     filename = '20240316 Mercadona 103,45 €.pdf'
+    # filename = '20240109 Mercadona 7,10 €.pdf'
     extracted_text = convert_pdf_to_text_with_ocr(filename)
     print(extracted_text)
