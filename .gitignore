@@ -3,3 +3,8 @@ secrets/*
 */venv/*
 */csvs/*
 */avros/*
+*/img/*
+.DS_Store
+venv
+pyvenv.cfg
+Output.txt
