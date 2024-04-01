@@ -16,13 +16,13 @@ load_dotenv(dotenv_path)
 
 class TicketTrackrETL:
 
-    def gmail_tickets_extraction(self, refresh_token, sender_email, gmail_secret_path,
+    def extract_tickets_from_gmail(self, refresh_token, sender_email, gmail_secret_path,
                                  save_dir):
         os.environ['REFRESH_TOKEN'] = refresh_token
         os.environ['SENDER_EMAIL'] = sender_email
         os.environ['GMAIL_CLIENT_SECRET_PATH'] = gmail_secret_path
         os.environ['SAVE_DIR'] = save_dir
-        subprocess.run(['python3', './gmail_tickets_extraction/main.py'], check=True)
+        subprocess.run(['python3', './extract_tickets_from_gmail/main.py'], check=True)
 
     def convert_pdf_to_avro(self, pdf_dir):
         os.environ['PDF_DIR'] = pdf_dir
@@ -40,7 +40,7 @@ class TicketTrackrETL:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--gmail_tickets_extraction",
+    parser.add_argument("--extract_tickets_from_gmail",
                         action="store_true",
                         help="Execute gmail tickets extraction")
     parser.add_argument("--convert_pdf_to_avro",
@@ -51,17 +51,17 @@ if __name__ == "__main__":
                         help="Execute uplaod files to nas")
     args = parser.parse_args()
     ticket_tracker = TicketTrackrETL()
-    if args.gmail_tickets_extraction:
+    if args.extract_tickets_from_gmail:
         logger.info('Starting gmail ticket extraction')
         refresh_token = os.getenv('REFRESH_TOKEN')
         sender_email = os.getenv('SENDER_EMAIL')
         gmail_secret_path = os.getenv('GMAIL_CLIENT_SECRET_PATH')
         save_dir = os.getenv('SAVE_DIR')
-        ticket_tracker.gmail_tickets_extraction(refresh_token, sender_email,
+        ticket_tracker.extract_tickets_from_gmail(refresh_token, sender_email,
                                                 gmail_secret_path, save_dir)
     if args.convert_pdf_to_avro:
         logger.info('Starting conversion from pdf to avro')
-        pdf_dir = './gmail_tickets_extraction/emails'
+        pdf_dir = './extract_tickets_from_gmail/emails'
         ticket_tracker.convert_pdf_to_avro(pdf_dir)
 
     if args.upload_files_to_nas:

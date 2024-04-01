@@ -1,10 +1,7 @@
 import os
 import re
+
 import fastavro
-from fastavro.schema import load_schema
-from datetime import datetime
-
-
 import pytesseract
 from pdf2image import convert_from_path
 
@@ -16,10 +13,9 @@ avro_dir = './convert_pdf_to_avro/avros'
 class ProductParser:
     pdf_dir = ''
     filename = None
-    text = ''
     product_dict = dict()
 
-    def __init__(self, file_path):
+    def __init__(self, file_path=None):
         self.file_path = file_path
         # Your predefined field types
         self.field_types = {
@@ -55,14 +51,16 @@ class ProductParser:
         self.schema = _create_avro_schema(self)
 
     def convert_pdf_to_text(self):
+        text = ''
         # Convert PDF to a list of image objects
         _images = convert_from_path(self.file_path)
         # Iterate through each image and extract text using Tesseract OCR
         for image in _images:
-            self.text += pytesseract.image_to_string(image)
+            text += pytesseract.image_to_string(image)
+        return text
 
-    def get_product_lines(self):
-        lines = [[line] for line in self.text.splitlines()]
+    def get_product_lines(self, text):
+        lines = [[line] for line in text.splitlines()]
         for number, line in enumerate(lines):
             line_text = line[0]
             if 'Descrip' in line_text:
@@ -77,9 +75,9 @@ class ProductParser:
                          if any(item.strip() for item in sublist)]
         return product_lines
 
-    def get_timestamp(self):
+    def get_timestamp(self, text):
         # Extract timestamp
-        timestamp_match = re.search(r'\d{2}/\d{2}/\d{4} \d{2}:\d{2}', self.text)
+        timestamp_match = re.search(r'\d{2}/\d{2}/\d{4} \d{2}:\d{2}', text)
         return timestamp_match.group(0) if timestamp_match else None
 
     def get_quantity(self, product_info):
@@ -174,9 +172,9 @@ if __name__ == "__main__":
             product_list = list()
             file_path = os.path.join(pdf_dir, file)
             product = ProductParser(file_path)
-            product.convert_pdf_to_text()
-            timestamp = product.get_timestamp()
-            product_lines = product.get_product_lines()
+            text = product.convert_pdf_to_text()
+            timestamp = product.get_timestamp(text)
+            product_lines = product.get_product_lines(text)
             for product_info in product_lines:
                 product.get_quantity(product_info)
                 product.get_and_convert_price(product_info)
@@ -189,15 +187,5 @@ if __name__ == "__main__":
                     product.product_dict = {}
             print(product_list)
 
-            # with open(f'{csv_dir}/{file.replace(".pdf", ".csv")}', 'w') as f:
-            #     f.write('cantidad,descripcion,peso,unidad_kilitro,precio_unitario,'
-            #             'precio_kilitro,unidad_precio_kilitro,importe,timestamp\n')
-            #     for product in product_list:
-            #         f.write(f"{product['cantidad']},{product['descripcion']},"
-            #                 f"{product['peso']},{product['unidad_kilitro']},"
-            #                 f"{product['precio_unitario']},{product['precio_kilitro']},"
-            #                 f"{product['unidad_precio_kilitro']},{product['importe']},"
-            #                 f"{product['timestamp']}\n")
-            print(product.schema)
             with open(f'{avro_dir}/{file.replace(".pdf", ".avro")}', 'wb') as f:
                 fastavro.writer(f, product.schema, product_list)
