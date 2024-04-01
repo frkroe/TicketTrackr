@@ -1,35 +1,58 @@
 import os
 import re
+import fastavro
+from fastavro.schema import load_schema
+from datetime import datetime
+
 
 import pytesseract
 from pdf2image import convert_from_path
 
 # Get the directory path where the PDF files are stored.
-csv_dir = './csvs'
-avro_dir = './avros'
+csv_dir = './convert_pdf_to_avro/csvs'
+avro_dir = './convert_pdf_to_avro/avros'
 
 
 class ProductParser:
     pdf_dir = ''
     filename = None
-    text = ''  # str() no le gusta a Miguel
-
+    text = ''
     product_dict = dict()
-
-    # product_dict = {
-    #     'cantidad': None,
-    #     'descripcion': None,
-    #     'peso': None,
-    #     'unidad_kilitro': None,  # kilitro: kg o l
-    #     'precio_unitario': None,
-    #     'precio_kilitro': None,
-    #     'unidad_precio_kilitro': None,
-    #     'importe': None,
-    #     'timestamp': None
-    # }
 
     def __init__(self, file_path):
         self.file_path = file_path
+        # Your predefined field types
+        self.field_types = {
+            'cantidad': 'int',
+            'importe': 'float',
+            'precio_unitario': 'float',
+            'peso': 'float',
+            'unidad_kilitro': 'string',
+            'precio_kilitro': 'float',
+            'unidad_precio_kilitro': 'string',
+            'descripcion': 'string',
+            'timestamp': 'string'
+        }
+
+        def _create_avro_schema(self):
+            _fields = []
+            for field, type_str in self.field_types.items():
+                avro_type = type_str
+                # Map Python types to Avro types
+                if type_str == 'int':
+                    avro_type = 'int'
+                elif type_str == 'float':
+                    avro_type = 'float'
+                elif type_str == 'string':
+                    avro_type = 'string'
+                _fields.append({"name": field, "type": [avro_type, "null"]})
+            schema = {
+                "type": "record",
+                "name": "Item",
+                "fields": _fields
+            }
+            return schema
+        self.schema = _create_avro_schema(self)
 
     def convert_pdf_to_text(self):
         # Convert PDF to a list of image objects
@@ -44,7 +67,7 @@ class ProductParser:
             line_text = line[0]
             if 'Descrip' in line_text:
                 initial_product_line = number + 1
-            if 'TOTAL (' in line_text:
+            if 'TOTAL' in line_text:
                 final_product_line = number
                 break
         product_lines = list(map(lambda sublist: [
@@ -63,7 +86,8 @@ class ProductParser:
         quant_pattern = r'^(\d{1,3})\s'
         for info in product_info:
             if re.search(quant_pattern, info):
-                self.product_dict['cantidad'] = re.search(quant_pattern, info).group(1)
+                self.product_dict['cantidad'] = int(re.
+                                                    search(quant_pattern, info).group(1))
             else:
                 self.product_dict['cantidad'] = 1
 
@@ -73,9 +97,9 @@ class ProductParser:
         for info in product_info:
             match = re.search(price_pattern, info)
             if match and '.' not in match.group(1):
-                result = format(float(match.group(1)) / 100, '.2f')
-                self.product_dict['importe'] = result
-                product_info[0] = re.sub(price_pattern, f" {str(result)}", info)
+                result = str(format(float(match.group(1)) / 100, '.2f'))
+                self.product_dict['importe'] = float(result)
+                product_info[0] = re.sub(price_pattern, f" {result}", info)
             else:
                 self.product_dict['importe'] = None
 
@@ -110,9 +134,9 @@ class ProductParser:
                 match_variable_price = re.search(variable_price_pattern, info)
                 result_variable_price = format(
                     float(match_variable_price.group(1)) / 100, '.2f')
-                self.product_dict['peso'] = result_weight
+                self.product_dict['peso'] = float(result_weight)
                 self.product_dict['unidad_kilitro'] = 'kg'
-                self.product_dict['precio_kilitro'] = result_variable_price
+                self.product_dict['precio_kilitro'] = float(result_variable_price)
                 self.product_dict['unidad_precio_kilitro'] = '€/kg'
                 product_info[0] = re.sub(variable_price_pattern,
                                          f"{str(result_variable_price)}", info)
@@ -124,7 +148,7 @@ class ProductParser:
                 self.product_dict['unidad_precio_kilitro'] = None
 
     def get_description(self, product_info):
-        desc_pattern = r'^\d*\s([+\-%A-Za-z0-9 /%º.,-ñáéíóúÁÉÍÓÚüÜ]+?)(?=\s\d+\.\d{2})'
+        desc_pattern = r'^\d*\s([+\-%A-Za-z0-9 /%º*.,-ñáéíóúÁÉÍÓÚüÜ]+?)(?=\s\d+\.\d{2})'
         quant_pattern = r'^(\d{1,3})\s'
         for info in product_info:
             # Skip if info start with a weight with 3 decimal places (e.g. 1.456)
@@ -143,7 +167,6 @@ class ProductParser:
 
 
 if __name__ == "__main__":
-    # pdf_dir = '../gmail_ticket_extraction/emails'
     pdf_dir = os.getenv('PDF_DIR')
     for file in os.listdir(pdf_dir):
         if file.endswith('.pdf'):
@@ -164,13 +187,17 @@ if __name__ == "__main__":
                     product.product_dict['timestamp'] = timestamp
                     product_list.append(product.product_dict)
                     product.product_dict = {}
+            print(product_list)
 
-            with open(f'{csv_dir}/{file.replace(".pdf", ".csv")}', 'w') as f:
-                f.write('cantidad,descripcion,peso,unidad_kilitro,precio_unitario,'
-                        'precio_kilitro,unidad_precio_kilitro,importe,timestamp\n')
-                for product in product_list:
-                    f.write(f"{product['cantidad']},{product['descripcion']},"
-                            f"{product['peso']},{product['unidad_kilitro']},"
-                            f"{product['precio_unitario']},{product['precio_kilitro']},"
-                            f"{product['unidad_precio_kilitro']},{product['importe']},"
-                            f"{product['timestamp']}\n")
+            # with open(f'{csv_dir}/{file.replace(".pdf", ".csv")}', 'w') as f:
+            #     f.write('cantidad,descripcion,peso,unidad_kilitro,precio_unitario,'
+            #             'precio_kilitro,unidad_precio_kilitro,importe,timestamp\n')
+            #     for product in product_list:
+            #         f.write(f"{product['cantidad']},{product['descripcion']},"
+            #                 f"{product['peso']},{product['unidad_kilitro']},"
+            #                 f"{product['precio_unitario']},{product['precio_kilitro']},"
+            #                 f"{product['unidad_precio_kilitro']},{product['importe']},"
+            #                 f"{product['timestamp']}\n")
+            print(product.schema)
+            with open(f'{avro_dir}/{file.replace(".pdf", ".avro")}', 'wb') as f:
+                fastavro.writer(f, product.schema, product_list)

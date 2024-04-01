@@ -91,7 +91,7 @@ class FileStation:
                 }
                 args = {
                     'path': dest_path,
-                    'create_parents': False,
+                    'create_parents': True,
                     'overwrite': True,
                 }
                 files = {
@@ -113,9 +113,9 @@ if __name__ == "__main__":
         synology_password=os.getenv("SYNOLOGY_PASSWORD")
     )
     nas_dir = os.getenv("SYNOLOGY_DIRECTORY")
-    avro_dir = os.getenv("AVRO_DIRECTORY")
+    avro_dir = './convert_pdf_to_avro/avros'
 
     for file in os.listdir(avro_dir):
         if file.endswith('.avro'):
-            nas_class.upload_file(nas_dir, file)
+            nas_class.upload_file(nas_dir, avro_dir + '/' + file)
     nas_class.logout()

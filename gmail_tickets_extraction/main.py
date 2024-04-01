@@ -4,12 +4,8 @@ import json
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from dotenv import load_dotenv
 from googleapiclient.errors import HttpError
 
-# Load environment variables
-dotenv_path = "../secrets/.env"
-load_dotenv(dotenv_path)
 
 REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
