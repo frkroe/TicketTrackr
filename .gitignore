@@ -1,8 +1,8 @@
 secrets/*
 */emails/*
 */venv/*
-*/csvs/*
 */avros/*
+*/csvs/*
 */img/*
 .DS_Store
 venv
