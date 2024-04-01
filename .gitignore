@@ -8,3 +8,4 @@ secrets/*
 venv
 pyvenv.cfg
 Output.txt
+junit.xml

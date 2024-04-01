@@ -9,33 +9,38 @@ from googleapiclient.errors import HttpError
 
 REFRESH_TOKEN = os.getenv('REFRESH_TOKEN')
 SENDER_EMAIL = os.getenv('SENDER_EMAIL')
-
-# Load client secrets values
-GMAIL_CLIENT_SECRET_PATH = os.getenv('GMAIL_CLIENT_SECRET_PATH')
-
-with open(GMAIL_CLIENT_SECRET_PATH) as f:
-    data = json.load(f)
-
-CLIENT_ID = data['installed']['client_id']
-CLIENT_SECRET = data['installed']['client_secret']
-
 SAVE_DIR = os.getenv('SAVE_DIR')
-SCOPES = ['https://www.googleapis.com/auth/gmail.modify']
+GMAIL_CLIENT_SECRET_PATH = os.getenv('GMAIL_CLIENT_SECRET_PATH')
 
 
 class GmailService:
+    def __init__(self, refresh_token=REFRESH_TOKEN, sender_email=SENDER_EMAIL,
+                 save_dir=SAVE_DIR, client_secret_path=GMAIL_CLIENT_SECRET_PATH):
+        self.refresh_token = refresh_token
+        self.sender_email = sender_email
+        self.save_dir = save_dir
+        self.client_secret_path = client_secret_path
+
+        with open(self.client_secret_path) as f:
+            data = json.load(f)
+
+        self.client_id = data['installed']['client_id']
+        self.client_secret = data['installed']['client_secret']
+
+        self.scopes = ['https://www.googleapis.com/auth/gmail.modify']
+
     def gmail_authenticate(self):
-        creds = Credentials(None, refresh_token=REFRESH_TOKEN,
+        creds = Credentials(None, refresh_token=self.refresh_token,
                             token_uri='https://oauth2.googleapis.com/token',
-                            client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                            scopes=SCOPES)
+                            client_id=self.client_id, client_secret=self.client_secret,
+                            scopes=self.scopes)
         creds.refresh(Request())
         return build('gmail', 'v1', credentials=creds)
 
     def dowload_messages(self, service):
         try:
             # Search for unread emails from the specified sender
-            query = f'is:unread from:{SENDER_EMAIL} has:attachment'
+            query = f'is:unread from:{self.sender_email} has:attachment'
             results = service.users().messages().list(userId='me', q=query).execute()
             messages = results.get('messages', [])
 
@@ -48,8 +53,8 @@ class GmailService:
             print(f'An error occurred: {error}')
 
     def download_pdfs_from_messages(self, service, messages):
-        if not os.path.exists(SAVE_DIR):
-            os.makedirs(SAVE_DIR)
+        if not os.path.exists(self.save_dir):
+            os.makedirs(self.save_dir)
         for message in messages:
             msg = service.users().messages().get(userId='me',
                                                  id=message['id'],
@@ -66,7 +71,7 @@ class GmailService:
                                                       id=att_id).execute()
                     data = att['data']
                     file_data = base64.urlsafe_b64decode(data.encode('UTF-8'))
-                    path = os.path.join(SAVE_DIR, part['filename'])
+                    path = os.path.join(self.save_dir, part['filename'])
 
                     with open(path, 'wb') as f:
                         f.write(file_data)
