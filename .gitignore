@@ -9,4 +9,5 @@ venv
 pyvenv.cfg
 Output.txt
 junit.xml
-*/__pycache__/*
+__pycache__/
+**/*.pyc
