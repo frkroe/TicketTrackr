@@ -11,3 +11,8 @@ Output.txt
 junit.xml
 __pycache__/
 **/*.pyc
+*.venv/
+*.vscode
+.pytest_cache
+*.avro
+*.csv

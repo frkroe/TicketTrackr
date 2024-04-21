@@ -1,4 +1,0 @@
-fastavro
-pytesseract
-Pillow
-pdf2image

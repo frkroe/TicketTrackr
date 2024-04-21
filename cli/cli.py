@@ -2,9 +2,11 @@ import argparse
 import logging
 import os
 import subprocess
-# import yaml
 
 from dotenv import load_dotenv
+
+# import yaml
+
 
 logger = logging.getLogger('cli')
 logger.addHandler(logging.StreamHandler())
@@ -17,7 +19,7 @@ load_dotenv(dotenv_path)
 class TicketTrackrETL:
 
     def extract_tickets_from_gmail(self, refresh_token, sender_email, gmail_secret_path,
-                                 save_dir):
+                                   save_dir):
         os.environ['REFRESH_TOKEN'] = refresh_token
         os.environ['SENDER_EMAIL'] = sender_email
         os.environ['GMAIL_CLIENT_SECRET_PATH'] = gmail_secret_path
@@ -58,7 +60,7 @@ if __name__ == "__main__":
         gmail_secret_path = os.getenv('GMAIL_CLIENT_SECRET_PATH')
         save_dir = os.getenv('SAVE_DIR')
         ticket_tracker.extract_tickets_from_gmail(refresh_token, sender_email,
-                                                gmail_secret_path, save_dir)
+                                                  gmail_secret_path, save_dir)
     if args.convert_pdf_to_avro:
         logger.info('Starting conversion from pdf to avro')
         pdf_dir = './extract_tickets_from_gmail/emails'

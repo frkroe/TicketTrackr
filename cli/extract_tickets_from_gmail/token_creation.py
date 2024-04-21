@@ -1,6 +1,6 @@
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-PATH = './secrets/'
+PATH = '../secrets/'
 
 # Replace with the path to your downloaded client secrets file
 CLIENT_SECRETS_FILE = PATH + 'gmail_client_secret.json'

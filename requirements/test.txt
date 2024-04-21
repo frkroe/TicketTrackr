@@ -1,0 +1,11 @@
+-r base.txt
+
+# Testing
+pytest
+
+# Linting
+flake8
+isort
+flake8-isort
+coverage
+pytest-cov

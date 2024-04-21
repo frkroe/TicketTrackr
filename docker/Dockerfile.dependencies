@@ -1,0 +1,21 @@
+FROM python:3.11-slim
+
+ARG BUILD_DATE
+ARG VCS_REF
+LABEL org.label-schema.build-date=${BUILD_DATE} \
+        org.label-schema.name="tickettrackr"\
+        org.label-schema.vcs-ref=${VCS_REF} \
+        org.label-schema.license=MIT
+
+
+# Copy the current directory contents into the container at /app
+COPY ./requirements /app/requirements
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir --disable-pip-version-check -r /app/requirements/production.txt
+
+####################
+## continue with the rest of the Dockerfile
+## what/ how to run docker with .env file
+####################
+

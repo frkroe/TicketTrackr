@@ -1,0 +1,16 @@
+#Convert
+fastavro
+pytesseract
+Pillow
+pdf2image
+
+#Extract
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+python-dotenv
+
+#Upload
+python-dotenv==1.0.1
+Requests==2.31.0
+requests_mock

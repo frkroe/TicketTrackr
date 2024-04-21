@@ -1,0 +1,15 @@
+
+version: '3.7'
+
+services:
+  service:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    image: $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG$DOCKER_BRANCH_NAME
+    env_file:
+      - envfiles/local.env
+    stdin_open: true
+    tty: true
+    volumes:
+      - '../cli:/app/cli'
