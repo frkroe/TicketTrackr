@@ -1,6 +1,0 @@
-cantidad,descripcion,peso,unidad_kilitro,precio_unitario,precio_kilitro,unidad_precio_kilitro,importe,timestamp
-1,CHICLE HIERBABUENA,None,None,None,None,None,1.0,26/03/2024 13:27
-1,ENSALADA*,None,None,None,None,None,4.5,26/03/2024 13:27
-1,NAPOLITANA MIXTA,None,None,None,None,None,0.9,26/03/2024 13:27
-1,MANDARINA,0.102,kg,None,1.99,€/kg,0.2,26/03/2024 13:27
-1,BANANA,0.192,kg,None,1.45,€/kg,0.28,26/03/2024 13:27

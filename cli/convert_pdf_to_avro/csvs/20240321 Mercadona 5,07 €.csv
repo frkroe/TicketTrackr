@@ -1,4 +1,0 @@
-cantidad,descripcion,peso,unidad_kilitro,precio_unitario,precio_kilitro,unidad_precio_kilitro,importe,timestamp
-1,ENSALADA*,None,None,None,None,None,4.5,21/03/2024 13:47
-1,MANDARINA,0.126,kg,None,1.99,€/kg,0.25,21/03/2024 13:47
-1,BANANA,0.224,kg,None,1.45,€/kg,0.32,21/03/2024 13:47
