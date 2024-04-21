@@ -1,0 +1,11 @@
+cantidad,descripcion,peso,unidad_kilitro,precio_unitario,precio_kilitro,unidad_precio_kilitro,importe,timestamp
+2,PANECILLO SIN SAL,None,None,0.4,None,None,0.8,13/03/2024 20:13
+1,BOLSA PLASTICO,None,None,None,None,None,0.15,13/03/2024 20:13
+1,JAMON S. EXTRA FINO,None,None,None,None,None,2.45,13/03/2024 20:13
+1,SNACK CALABAZA,None,None,None,None,None,0.9,13/03/2024 20:13
+1,QUESO FRESCO CABRA,None,None,None,None,None,2.67,13/03/2024 20:13
+1,ANGURINAS AL AJILLO,None,None,None,None,None,2.24,13/03/2024 20:13
+1,ENSALADA PRIMAVERA,None,None,None,None,None,0.96,13/03/2024 20:13
+1,SACARINA LIQUIDA,None,None,None,None,None,0.85,13/03/2024 20:13
+1,BANANA,0.160,kg,None,1.45,€/kg,0.23,13/03/2024 20:13
+1,MANGO AVION,0.558,kg,None,0.04,€/kg,2.56,13/03/2024 20:13

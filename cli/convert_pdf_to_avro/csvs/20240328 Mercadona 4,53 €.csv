@@ -1,0 +1,4 @@
+cantidad,descripcion,peso,unidad_kilitro,precio_unitario,precio_kilitro,unidad_precio_kilitro,importe,timestamp
+1,BURGER CON QUESO,None,None,None,None,None,3.0,28/03/2024 16:38
+1,NAPOLITANA MIXTA,None,None,None,None,None,0.9,28/03/2024 16:38
+1,SURTIDO DULCES,0.126,kg,None,5.00,€/kg,0.63,28/03/2024 16:38

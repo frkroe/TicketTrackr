@@ -81,7 +81,7 @@ def test_quantity_complex():
     assert ProductParser().product_dict['cantidad'] == 1
 
 
-def test_quantity_none(): 
+def test_quantity_none():
     sample_product = ['3 +PROT NATILLA VAINI 175 525']
     ProductParser().get_quantity(sample_product)
     assert ProductParser().product_dict['cantidad'] == 3

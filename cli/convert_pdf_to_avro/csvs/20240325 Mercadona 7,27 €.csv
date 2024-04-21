@@ -1,0 +1,5 @@
+cantidad,descripcion,peso,unidad_kilitro,precio_unitario,precio_kilitro,unidad_precio_kilitro,importe,timestamp
+1,MINI SALADAS,None,None,None,None,None,1.25,25/03/2024 14:02
+1,POKE SALMON,None,None,None,None,None,5.5,25/03/2024 14:02
+1,BANANA,0.164,kg,None,1.45,€/kg,0.24,25/03/2024 14:02
+1,MANDARINA,0.140,kg,None,1.99,€/kg,0.28,25/03/2024 14:02

@@ -1,9 +1,0 @@
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
-python-dotenv
-fastavro
-pytesseract
-Pillow
-pdf2image
-Requests
